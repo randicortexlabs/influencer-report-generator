@@ -199,6 +199,11 @@ export default function Home() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    // Simple approach: Use browser's print to PDF
+    window.print();
+  };
+
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -208,12 +213,11 @@ export default function Home() {
     );
   }
 
-  if (showReport && reportData) {
+ if (showReport && reportData) {
     return (
       <div className={styles.reportContainer}>
-        <div className={styles.report}>
+        <div className={styles.report} id="campaign-report">
           <div className={styles.reportHeader}>
-            <div className={styles.logoPlaceholder}>YOUR LOGO</div>
             <h1>Campaign Performance Report</h1>
             <p className={styles.campaignName}>{reportData.campaignName}</p>
             <p className={styles.reportMeta}>
@@ -261,6 +265,83 @@ export default function Home() {
                 </div>
               </div>
             </section>
+
+            <section>
+              <h2>Engagement Performance</h2>
+              <div className={styles.metricsGrid}>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricValue}>{reportData.totals.totalEngagements.toLocaleString()}</div>
+                  <div className={styles.metricLabel}>TOTAL ENGAGEMENTS</div>
+                </div>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricValue}>{reportData.totals.avgEngagementRate}%</div>
+                  <div className={styles.metricLabel}>AVG ENGAGEMENT RATE</div>
+                </div>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricValue}>${reportData.totals.avgCPM}</div>
+                  <div className={styles.metricLabel}>AVG CPM</div>
+                </div>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricValue}>${reportData.totals.cpe}</div>
+                  <div className={styles.metricLabel}>AVG COST PER ENGAGEMENT</div>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2>Influencer Performance Breakdown</h2>
+              {reportData.posts.map((post, index) => (
+                <div key={index} className={styles.influencerCard}>
+                  <div className={styles.influencerHeader}>
+                    <div>
+                      <h3>{post.influencer}</h3>
+                      <span className={styles.platformBadge}>{post.contentType.toUpperCase()}</span>
+                    </div>
+                    <div className={styles.influencerCost}>
+                      Investment: ${post.cost.toLocaleString()}
+                    </div>
+                  </div>
+                  
+                  <div className={styles.influencerStats}>
+                    <div className={styles.influencerStatItem}>
+                      <div className={styles.influencerStatLabel}>Views</div>
+                      <div className={styles.influencerStatValue}>{post.views.toLocaleString()}</div>
+                    </div>
+                    <div className={styles.influencerStatItem}>
+                      <div className={styles.influencerStatLabel}>Likes</div>
+                      <div className={styles.influencerStatValue}>
+                        {post.likes === -1 ? 'Hidden' : post.likes.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className={styles.influencerStatItem}>
+                      <div className={styles.influencerStatLabel}>Comments</div>
+                      <div className={styles.influencerStatValue}>{post.comments.toLocaleString()}</div>
+                    </div>
+                    {post.shares && (
+                      <div className={styles.influencerStatItem}>
+                        <div className={styles.influencerStatLabel}>Shares</div>
+                        <div className={styles.influencerStatValue}>{post.shares.toLocaleString()}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.influencerMetrics}>
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricItemLabel}>Engagement Rate:</span>
+                      <span className={styles.metricItemValue}>{post.engagementRate}%</span>
+                    </div>
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricItemLabel}>CPM:</span>
+                      <span className={styles.metricItemValue}>${post.cpm}</span>
+                    </div>
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricItemLabel}>Cost per Engagement:</span>
+                      <span className={styles.metricItemValue}>${post.cpe}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </section>
             
             <section className={styles.missingSection}>
               <h2>Critical Metrics Still Unknown</h2>
@@ -285,7 +366,7 @@ export default function Home() {
                   <p className={styles.known}>✓ ROI: 576%</p>
                 </div>
               </div>
-              <a href="https://winfluencer.com" className={styles.ctaButton}>
+              <a href="https://winfluencer.online" className={styles.ctaButton}>
                 START TRACKING CONVERSIONS
               </a>
             </section>
@@ -293,16 +374,24 @@ export default function Home() {
           
           <div className={styles.reportFooter}>
             <p>Generated by Winfluencer's Campaign Analyzer</p>
-            <p className={styles.brand}>WINFLUENCER</p>
+            <p className={styles.brand}>WINFLUENCER.ONLINE</p>
           </div>
         </div>
         
-        <button 
-          onClick={() => window.location.reload()} 
-          className={styles.newReportBtn}
-        >
-          Generate New Report
-        </button>
+        <div className={styles.actionButtons}>
+          <button 
+            onClick={handleDownloadPDF} 
+            className={styles.downloadBtn}
+          >
+            📥 Download PDF Report
+          </button>
+          <button 
+            onClick={() => window.location.reload()} 
+            className={styles.newReportBtn}
+          >
+            Generate New Report
+          </button>
+        </div>
       </div>
     );
   }
