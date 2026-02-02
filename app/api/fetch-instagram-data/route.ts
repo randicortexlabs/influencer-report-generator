@@ -137,12 +137,23 @@ async function fetchInstagramData(url: string, cost: number, apiKey: string, api
   const influencerName = owner.username || 'Unknown';
   const followerCount = owner.edge_followed_by?.count || 0;
   
-  // Extract engagement metrics
-  const likesCount = data.edge_media_preview_like?.count || 0;
-  const commentsCount = data.edge_media_to_comment?.count || 0;
+  // Extract engagement metrics with multiple fallbacks
+  const likesCount = data.edge_media_preview_like?.count || 
+                     data.edge_liked_by?.count || 
+                     data.like_count || 
+                     0;
+  
+  const commentsCount = data.edge_media_to_comment?.count || 
+                        data.edge_media_to_parent_comment?.count ||
+                        data.comment_count || 
+                        (data.edge_media_preview_comment?.count) ||
+                        0;
   
   // Extract views (for videos/reels)
-  const viewsCount = data.video_view_count || data.video_play_count || 0;
+  const viewsCount = data.video_view_count || 
+                     data.video_play_count || 
+                     data.play_count ||
+                     0;
   
   // Determine content type
   let contentType = 'post';
@@ -167,7 +178,7 @@ async function fetchInstagramData(url: string, cost: number, apiKey: string, api
     comments: commentsCount,
     postedDate,
     cost,
-    engagementRate: followerCount > 0 ? ((engagements / followerCount) * 100).toFixed(2) : '0.00',
+    engagementRate: viewsCount > 0 ? ((engagements / viewsCount) * 100).toFixed(2) : '0.00',
     cpm: viewsCount > 0 ? ((cost / viewsCount) * 1000).toFixed(2) : '0.00',
     cpe: engagements > 0 ? (cost / engagements).toFixed(2) : '0.00',
     totalEngagements: engagements
@@ -204,10 +215,10 @@ async function fetchTikTokData(url: string, cost: number, apiKey: string, apiHos
   const data = result.data;
   
   // Extract metrics
-  const likesCount = data.digg_count || 0;
+  const likesCount = data.digg_count || data.like_count || 0;
   const commentsCount = data.comment_count || 0;
   const sharesCount = data.share_count || 0;
-  const viewsCount = data.play_count || 0;
+  const viewsCount = data.play_count || data.view_count || 0;
   
   // Extract author information
   const author = data.author || {};
@@ -233,7 +244,10 @@ async function fetchTikTokData(url: string, cost: number, apiKey: string, apiHos
     shares: sharesCount,
     postedDate,
     cost,
-    engagementRate: followerCount > 0 ? ((engagements / followerCount) * 100).toFixed(2) : '0.00',
+    // For TikTok, calculate engagement rate based on views since we don't have follower count
+    engagementRate: viewsCount > 0 
+      ? ((engagements / viewsCount) * 100).toFixed(2)
+      : '0.00',
     cpm: viewsCount > 0 ? ((cost / viewsCount) * 1000).toFixed(2) : '0.00',
     cpe: engagements > 0 ? (cost / engagements).toFixed(2) : '0.00',
     totalEngagements: engagements
