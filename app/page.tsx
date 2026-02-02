@@ -11,6 +11,7 @@ interface Post {
   views: number;
   likes: number;
   comments: number;
+  shares?: number; 
   postedDate: string;
   cost: number;
   engagementRate: string;
